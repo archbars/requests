@@ -30,7 +30,11 @@ def translate_it(text, input_lang, output_lang):
     }
 
     response = requests.get(url, params=params).json()
-    return ' '.join(response.get('text', []))
+    if response.get('text') is not None:
+        return ' '.join(response.get('text', []))
+    else:
+        print('Неверный ответ')
+        exit(1)
 
 
 def language_detect(text):
@@ -43,16 +47,24 @@ def language_detect(text):
         'text': text,
     }
     response = requests.get(url, params=params).json()
-    return response.get('lang')
+    if response.get('lang') is not None:
+        return response.get('lang')
+    else:
+        print('Неверный ответ')
+        exit(1)
 
 
-def for_files_in_folder():
-    for d, dirs, files in os.walk(os.path.join(os.path.dirname(__file__), "input")):
-        for file in files:
-            source_file = os.path.join(d, file)
-            destination_file = os.path.join(os.path.join(os.path.dirname(__file__), "output"), file)
-            with open(source_file, 'r') as curfile:
-                for line in curfile:
+def for_txt_files_in_folder():
+    path_to_input = os.path.join(os.path.dirname(__file__), "input")
+    path_to_output = os.path.join(os.path.dirname(__file__), "output")
+    if not os.path.exists(path_to_output):
+        os.makedirs(path_to_output)
+    for file in os.listdir(path_to_input):
+        if file.endswith('.txt'):
+            source_file = os.path.join(path_to_input, file)
+            destination_file = os.path.join(path_to_output, file)
+            with open(source_file, 'r') as cur_file:
+                for line in cur_file:
                     if len(line) > 1:
                         cur_lang = language_detect(line)
                         with open(destination_file, 'a') as destfile:
@@ -62,6 +74,4 @@ def for_files_in_folder():
                             destfile.write('\n')
 
 
-for_files_in_folder()
-
-
+for_txt_files_in_folder()
